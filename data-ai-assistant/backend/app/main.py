@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.router import api_router
+from app.services.langserve_server import langserve_server
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -21,10 +22,16 @@ app.add_middleware(
 # API 라우터 등록
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+# LangServe 라우트 추가
+try:
+    langserve_server.add_routes_to_app(app)
+except Exception as e:
+    print(f"Warning: Could not add LangServe routes: {e}")
+
 
 @app.get("/")
 async def root():
-    return {"message": "Data AI Assistant API", "version": settings.VERSION}
+    return {"message": "Data AI Assistant API with LangServe", "version": settings.VERSION}
 
 
 @app.get("/health")

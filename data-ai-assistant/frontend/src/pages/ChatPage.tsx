@@ -21,8 +21,15 @@ import {
   Card,
   CardContent,
   Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
-import { Send, Psychology, Code, TableChart } from '@mui/icons-material';
+import { Send, Psychology, Code, TableChart, ExpandMore, AutoFixHigh, Link, Speed } from '@mui/icons-material';
 import { queryApi, QueryResponse } from '../services/api';
 
 interface Message {
@@ -38,6 +45,7 @@ const ChatPage: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [selectedEngine, setSelectedEngine] = useState<string>('langgraph');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -85,7 +93,10 @@ const ChatPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await queryApi.ask({ question: userMessage });
+      const response = await queryApi.ask({ 
+        question: userMessage, 
+        method: selectedEngine 
+      });
       addMessage('assistant', response.answer, response);
     } catch (error: any) {
       addMessage('assistant', `오류가 발생했습니다: ${error.message}`);
@@ -162,6 +173,22 @@ const ChatPage: React.FC = () => {
                 />
               )}
               
+              {message.data.method && (
+                <Chip
+                  icon={
+                    message.data.method === 'langgraph' ? <AutoFixHigh /> :
+                    message.data.method === 'langchain' ? <Link /> : <Speed />
+                  }
+                  label={
+                    message.data.method === 'langgraph' ? 'LangGraph 에이전트' :
+                    message.data.method === 'langchain' ? 'LangChain SQL' : '기본 엔진'
+                  }
+                  color="primary"
+                  size="small"
+                  sx={{ mb: 1, ml: 1 }}
+                />
+              )}
+              
               {message.data.confidence && (
                 <Chip
                   label={`신뢰도: ${Math.round(message.data.confidence * 100)}%`}
@@ -199,6 +226,32 @@ const ChatPage: React.FC = () => {
                     {renderDataTable(message.data.data, message.data.columns)}
                   </CardContent>
                 </Card>
+              )}
+              
+              {message.data.intermediate_steps && message.data.intermediate_steps.length > 0 && (
+                <Accordion sx={{ mt: 2 }}>
+                  <AccordionSummary expandIcon={<ExpandMore />}>
+                    <Typography variant="subtitle2">
+                      처리 단계 ({message.data.intermediate_steps.length}개)
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <List dense>
+                      {message.data.intermediate_steps.map((step: any, index: number) => (
+                        <ListItem key={index}>
+                          <Typography variant="body2">
+                            <strong>{step.step}:</strong> {step.result}
+                            {step.timestamp && (
+                              <span style={{ opacity: 0.7, fontSize: '0.8em' }}>
+                                {' '}({new Date(step.timestamp).toLocaleTimeString()})
+                              </span>
+                            )}
+                          </Typography>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </AccordionDetails>
+                </Accordion>
               )}
               
               {message.data.error && (
@@ -261,6 +314,37 @@ const ChatPage: React.FC = () => {
             <Divider />
             
             <Box sx={{ p: 2 }}>
+              <Box sx={{ mb: 2 }}>
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                  <InputLabel>AI 엔진 선택</InputLabel>
+                  <Select
+                    value={selectedEngine}
+                    label="AI 엔진 선택"
+                    onChange={(e) => setSelectedEngine(e.target.value)}
+                    disabled={loading}
+                  >
+                    <MenuItem value="langgraph">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <AutoFixHigh fontSize="small" />
+                        LangGraph 에이전트 (권장)
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="langchain">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Link fontSize="small" />
+                        LangChain SQL
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="original">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Speed fontSize="small" />
+                        기본 엔진
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              
               <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 1 }}>
                 <TextField
                   fullWidth
@@ -285,6 +369,50 @@ const ChatPage: React.FC = () => {
         </Grid>
         
         <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              AI 엔진 비교
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Card variant="outlined" sx={{ bgcolor: selectedEngine === 'langgraph' ? 'primary.light' : 'inherit' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <AutoFixHigh color="primary" />
+                    <Typography variant="subtitle2">LangGraph 에이전트</Typography>
+                    <Chip label="권장" color="primary" size="small" />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    스마트한 단계별 추론과 도구 사용으로 복잡한 질문 해결
+                  </Typography>
+                </CardContent>
+              </Card>
+              
+              <Card variant="outlined" sx={{ bgcolor: selectedEngine === 'langchain' ? 'primary.light' : 'inherit' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Link color="primary" />
+                    <Typography variant="subtitle2">LangChain SQL</Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    강력한 SQL 생성과 체인 기반 처리
+                  </Typography>
+                </CardContent>
+              </Card>
+              
+              <Card variant="outlined" sx={{ bgcolor: selectedEngine === 'original' ? 'primary.light' : 'inherit' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Speed color="primary" />
+                    <Typography variant="subtitle2">기본 엔진</Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    빠른 응답과 간단한 질의 처리
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Box>
+          </Paper>
+          
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
               샘플 질문

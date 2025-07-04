@@ -56,6 +56,7 @@ export interface LoginResponse {
 export interface QueryRequest {
   question: string;
   context?: string;
+  method?: string; // "langgraph", "langchain", "original"
 }
 
 export interface QueryResponse {
@@ -69,6 +70,8 @@ export interface QueryResponse {
   explanation?: string;
   confidence?: number;
   error?: string;
+  method?: string;
+  intermediate_steps?: any[];
 }
 
 export const authApi = {

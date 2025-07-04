@@ -24,6 +24,7 @@
 - **LLM**: OpenAI GPT-4 API
 - **Embedding**: OpenAI text-embedding-ada-002
 - **Cache**: Redis
+- **AI Framework**: LangChain, LangGraph, LangServe
 
 ### 프론트엔드
 - **Framework**: React + TypeScript
@@ -58,6 +59,11 @@ docker-compose -f docker-compose.dev.yml up -d
 - **프론트엔드**: http://localhost:3000
 - **백엔드 API**: http://localhost:8000
 - **API 문서**: http://localhost:8000/docs
+- **LangServe 엔드포인트**:
+  - LangGraph 에이전트: http://localhost:8000/agent
+  - RAG 체인: http://localhost:8000/rag
+  - SQL 체인: http://localhost:8000/sql
+  - 채팅 체인: http://localhost:8000/chat
 
 ### 4. 로그인 정보 (MVP 테스트용)
 - **사용자명**: admin
@@ -65,28 +71,44 @@ docker-compose -f docker-compose.dev.yml up -d
 
 ## 📋 주요 기능
 
-### 1. 🗣 자연어 질의
+### 1. 🤖 다중 AI 엔진 지원
+- **LangGraph 에이전트**: 스마트한 단계별 추론과 도구 사용
+- **LangChain SQL**: 강력한 SQL 체인 기반 처리  
+- **기본 엔진**: 빠른 응답과 간단한 질의 처리
+- 실시간 엔진 선택 및 비교
+
+### 2. 🗣 자연어 질의
 - 자연어로 데이터베이스 질의
 - 실시간 채팅 인터페이스
 - 질의 히스토리 관리
+- 중간 처리 단계 시각화
 
-### 2. 🔄 Text-to-SQL 변환
+### 3. 🔄 Text-to-SQL 변환
 - GPT-4 기반 자연어 → SQL 변환
 - SQL 쿼리 검증 및 안전성 검사
 - 읽기 전용 쿼리만 허용
+- LangGraph를 통한 스마트 쿼리 생성
 
-### 3. 🧠 RAG (Retrieval-Augmented Generation)
+### 4. 🧠 RAG (Retrieval-Augmented Generation)
 - 테이블 스키마 정보 벡터 검색
 - 비즈니스 용어 사전 활용
 - SQL 예시 패턴 학습
+- LangChain 기반 고급 문서 검색
 
-### 4. 📊 결과 시각화
+### 5. 📊 결과 시각화
 - 테이블 형태 결과 표시
 - 생성된 SQL 쿼리 표시
 - 신뢰도 점수 표시
+- 처리 단계별 상세 정보
 - 오류 메시지 처리
 
-### 5. 🔒 보안 기능
+### 6. 🔗 LangServe API
+- RESTful API 엔드포인트
+- 스트리밍 응답 지원
+- 배치 처리 지원
+- 타입 안전성 보장
+
+### 7. 🔒 보안 기능
 - JWT 기반 인증
 - SQL 인젝션 방지
 - 안전한 쿼리만 실행
@@ -198,11 +220,14 @@ docker-compose up -d
 
 ## 📈 로드맵
 
-### Phase 1 (현재) - MVP 완료 ✅
+### Phase 1 - MVP 완료 ✅
 - [x] 기본 Text-to-SQL 기능
 - [x] 웹 인터페이스
 - [x] RAG 기반 컨텍스트 검색
 - [x] Docker 컨테이너화
+- [x] LangChain, LangGraph, LangServe 통합
+- [x] 다중 AI 엔진 지원
+- [x] 스마트 에이전트 시스템
 
 ### Phase 2 - 기능 강화 (예정)
 - [ ] 사용자 피드백 시스템
